@@ -243,8 +243,7 @@ var handleCloudWatch = function(event, context) {
   var region = event.Records[0].EventSubscriptionArn.split(":")[3];
   var alarmRegion = message.Region;
   var accountId = message.AWSAccountId
-  var accountIdMap = JSON.parse(config.awsAccountMap).AccountMaps
-  //  var accountName = accountIdMap.accountId[accountId].name
+  var accountIdMap = JSON.parse(config.awsAccountMap).accounts
   var accountName = message.AWSAccountId;
   var subject = "AWS CloudWatch Notification";
   var alarmName = message.AlarmName;
@@ -264,7 +263,6 @@ var handleCloudWatch = function(event, context) {
   } else if (message.NewStateValue === "OK") {
       color = "good";
   }
-  //console.log(accountIdMap)
   
   for (var i=0; i< accountIdMap.length; i++) {
     if (accountIdMap[i].accountId === accountId) {
@@ -272,12 +270,14 @@ var handleCloudWatch = function(event, context) {
       break;
     }
   }
+
   for (var i=0; i < dimensions.length; i++) {
-    dimensionsText += dimensions[i].name + ' = ' + dimensions[i].value;
+    dimensionsText += dimensions[i].name + '=' + dimensions[i].value;
     if (i < (dimensions.length - 1)) {
-      dimensionsText += ';';
+      dimensionsText += '; ';
     }
   }
+
   var slackMessage = {
     text: "*" + subject + "*",
     attachments: [
@@ -289,9 +289,8 @@ var handleCloudWatch = function(event, context) {
           { "title": "AWS Account", "value": accountName, "short": true },
           { "title": "AWS Region", "value": alarmRegion, "short": true },
           { "title": "Alarm Description", "value": alarmReason, "short": false},
-          { "title": "Old State", "value": oldState, "short": true },
           { "title": "Namespace", "value": namespace, "short": true },
-          { "title": "Dimensions", "value": dimensionsText, "short": false },
+          { "title": "Dimensions", "value": dimensionsText, "short": true },
           {
             "title": "Trigger",
             "value": trigger.Statistic + " "
