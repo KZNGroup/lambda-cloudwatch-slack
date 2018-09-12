@@ -241,6 +241,7 @@ var handleCloudWatch = function(event, context) {
   var timestamp = (new Date(event.Records[0].Sns.Timestamp)).getTime()/1000;
   var message = JSON.parse(event.Records[0].Sns.Message);
   var region = event.Records[0].EventSubscriptionArn.split(":")[3];
+  var accountId = message.AWSAccountId
   var subject = "AWS CloudWatch Notification";
   var alarmName = message.AlarmName;
   var metricName = message.Trigger.MetricName;
@@ -264,6 +265,7 @@ var handleCloudWatch = function(event, context) {
         "color": color,
         "fields": [
           { "title": "Alarm Name", "value": alarmName, "short": true },
+          { "title": "Account Id", "value": accountId, "short": true },
           { "title": "Alarm Description", "value": alarmReason, "short": false},
           {
             "title": "Trigger",
