@@ -242,9 +242,14 @@ var handleCloudWatch = function(event, context) {
   var message = JSON.parse(event.Records[0].Sns.Message);
   var region = event.Records[0].EventSubscriptionArn.split(":")[3];
   var accountId = message.AWSAccountId
+  var accountIdMap = JSON.parse(config.awsAccountMap).AccountMaps
+  //  var accountName = accountIdMap.accountId[accountId].name
+  var accountName = message.AWSAccountId;
   var subject = "AWS CloudWatch Notification";
   var alarmName = message.AlarmName;
   var metricName = message.Trigger.MetricName;
+  var namespace = message.Trigger.Namespace;
+  var dimensions = message.Trigger.Dimensions;
   var oldState = message.OldStateValue;
   var newState = message.NewStateValue;
   var alarmDescription = message.AlarmDescription;
@@ -257,7 +262,14 @@ var handleCloudWatch = function(event, context) {
   } else if (message.NewStateValue === "OK") {
       color = "good";
   }
-
+  //console.log(accountIdMap)
+  
+  for (var i=0; i< accountIdMap.length; i++) {
+    if (accountIdMap[i].accountId === accountId) {
+      accountName = accountIdMap[i].name;
+      break;
+    }
+  }
   var slackMessage = {
     text: "*" + subject + "*",
     attachments: [
@@ -265,8 +277,12 @@ var handleCloudWatch = function(event, context) {
         "color": color,
         "fields": [
           { "title": "Alarm Name", "value": alarmName, "short": true },
-          { "title": "Account Id", "value": accountId, "short": true },
+          { "title": "AWS Account", "value": accountName, "short": true },
           { "title": "Alarm Description", "value": alarmReason, "short": false},
+          { "title": "Old State", "value": oldState, "short": true },
+          { "title": "Current State", "value": newState, "short": true },
+          { "title": "Namespace", "value": namespace, "short": true },
+          { "title": "Dimensions", "value": dimensions, "short": true },
           {
             "title": "Trigger",
             "value": trigger.Statistic + " "
@@ -277,8 +293,7 @@ var handleCloudWatch = function(event, context) {
               + trigger.Period + " seconds.",
               "short": false
           },
-          { "title": "Old State", "value": oldState, "short": true },
-          { "title": "Current State", "value": newState, "short": true },
+          { "title": "Reason", "value": alarmReason, "short": false },
           {
             "title": "Link to Alarm",
             "value": "https://console.aws.amazon.com/cloudwatch/home?region=" + region + "#alarm:alarmFilter=ANY;name=" + encodeURIComponent(alarmName),

@@ -7,6 +7,7 @@ module.exports = {
   icon_emoji: process.env.ICON_EMOJI,                      // slack emoji icon to use for messages
   orgIcon: process.env.ORG_ICON,                           // url to icon for your organization for display in the footer of messages
   orgName: process.env.ORG_NAME,                           // name of your organization for display in the footer of messages
+  awsAccountMap: process.env.AWS_ACCOUNT_MAP,              // JSON map of accountid:accountAlias
 
   services: {
     elasticbeanstalk: {
