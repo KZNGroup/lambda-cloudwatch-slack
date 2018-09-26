@@ -241,9 +241,16 @@ var handleCloudWatch = function(event, context) {
   var timestamp = (new Date(event.Records[0].Sns.Timestamp)).getTime()/1000;
   var message = JSON.parse(event.Records[0].Sns.Message);
   var region = event.Records[0].EventSubscriptionArn.split(":")[3];
+  var alarmRegion = message.Region;
+  var accountId = message.AWSAccountId
+  var accountIdMap = JSON.parse(config.awsAccountMap).accounts
+  var accountName = message.AWSAccountId;
   var subject = "AWS CloudWatch Notification";
   var alarmName = message.AlarmName;
   var metricName = message.Trigger.MetricName;
+  var namespace = message.Trigger.Namespace;
+  var dimensions = message.Trigger.Dimensions;
+  var dimensionsText = "";
   var oldState = message.OldStateValue;
   var newState = message.NewStateValue;
   var alarmDescription = message.AlarmDescription;
@@ -256,6 +263,20 @@ var handleCloudWatch = function(event, context) {
   } else if (message.NewStateValue === "OK") {
       color = "good";
   }
+  
+  for (var i=0; i< accountIdMap.length; i++) {
+    if (accountIdMap[i].accountId === accountId) {
+      accountName = accountIdMap[i].name;
+      break;
+    }
+  }
+
+  for (var i=0; i < dimensions.length; i++) {
+    dimensionsText += dimensions[i].name + '=' + dimensions[i].value;
+    if (i < (dimensions.length - 1)) {
+      dimensionsText += '; ';
+    }
+  }
 
   var slackMessage = {
     text: "*" + subject + "*",
@@ -264,7 +285,12 @@ var handleCloudWatch = function(event, context) {
         "color": color,
         "fields": [
           { "title": "Alarm Name", "value": alarmName, "short": true },
+          { "title": "Current State", "value": newState, "short": true },
+          { "title": "AWS Account", "value": accountName, "short": true },
+          { "title": "AWS Region", "value": alarmRegion, "short": true },
           { "title": "Alarm Description", "value": alarmReason, "short": false},
+          { "title": "Namespace", "value": namespace, "short": true },
+          { "title": "Dimensions", "value": dimensionsText, "short": true },
           {
             "title": "Trigger",
             "value": trigger.Statistic + " "
@@ -275,8 +301,6 @@ var handleCloudWatch = function(event, context) {
               + trigger.Period + " seconds.",
               "short": false
           },
-          { "title": "Old State", "value": oldState, "short": true },
-          { "title": "Current State", "value": newState, "short": true },
           {
             "title": "Link to Alarm",
             "value": "https://console.aws.amazon.com/cloudwatch/home?region=" + region + "#alarm:alarmFilter=ANY;name=" + encodeURIComponent(alarmName),
