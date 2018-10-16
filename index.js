@@ -314,6 +314,59 @@ var handleCloudWatch = function(event, context) {
   return _.merge(slackMessage, baseSlackMessage);
 };
 
+var handleConfigCompliance = function(event, context) {
+  var timestamp = (new Date(event.Records[0].Sns.Timestamp)).getTime()/1000;
+  var message = JSON.parse(event.Records[0].Sns.Message);
+  var region = event.Records[0].EventSubscriptionArn.split(":")[3];
+  var ruleRegion = message.region;
+  var accountId = message.account;
+  var accountIdMap = JSON.parse(config.awsAccountMap).accounts
+  var accountName = message.AWSAccountId;
+  var subject = "AWS Config Rule Compliance State Change Notification";
+  var configRuleName = message.detail.configRuleName;
+  var resourceType = message.detail.resourceType;
+  var resourceId = message.detail.resourceId;
+  var newComplianceType = message.detail.newEvaluationResult.complianceType;
+  var color = "warning";
+
+  if (newComplianceType === "NON_COMPLIANT") {
+      color = "danger";
+  } else if (newComplianceType === "COMPLIANT") {
+      color = "good";
+  }
+  
+  for (var i=0; i< accountIdMap.length; i++) {
+    if (accountIdMap[i].accountId === accountId) {
+      accountName = accountIdMap[i].name;
+      break;
+    }
+  }
+
+  var slackMessage = {
+    text: "*" + subject + "*",
+    attachments: [
+      {
+        "color": color,
+        "fields": [
+          { "title": "Config Rule Name", "value": configRuleName, "short": true },
+          { "title": "Compliance State", "value": newComplianceType, "short": true },
+          { "title": "AWS Account", "value": accountName, "short": true },
+          { "title": "AWS Region", "value": ruleRegion, "short": true },
+          { "title": "Resource Type", "value": resourceType, "short": true},
+          { "title": "Resource", "value": resourceId, "short": true },
+          {
+            "title": "Link to Rule",
+            "value": "https://console.aws.amazon.com/config/home?region=" + ruleRegion + "#rules/rules/rule-details/" + encodeURIComponent(configRuleName),
+            "short": false
+          }
+        ],
+        "ts":  timestamp
+      }
+    ]
+  };
+  return _.merge(slackMessage, baseSlackMessage);
+};
+
 var handleAutoScaling = function(event, context) {
   var subject = "AWS AutoScaling Notification"
   var message = JSON.parse(event.Records[0].Sns.Message);
@@ -418,6 +471,10 @@ var processEvent = function(event, context) {
     console.log("processing autoscaling notification");
     slackMessage = handleAutoScaling(event, context);
   }
+  else if(eventSubscriptionArn.indexOf(config.services.configcompliance.match_text) > -1 || eventSnsSubject.indexOf(config.services.configcompliance.match_text) > -1 || eventSnsMessage.indexOf(config.services.configcompliance.match_text) > -1){
+    console.log("processing config compliance notification");
+    slackMessage = handleConfigCompliance(event, context);
+  }
   else{
     slackMessage = handleCatchAll(event, context);
   }
@@ -442,6 +499,8 @@ exports.handler = function(event, context) {
     processEvent(event, context);
   } else if (config.unencryptedHookUrl) {
     hookUrl = config.unencryptedHookUrl;
+    console.log('posting to ' + hookUrl);
+
     processEvent(event, context);
   } else if (config.kmsEncryptedHookUrl && config.kmsEncryptedHookUrl !== '<kmsEncryptedHookUrl>') {
     var encryptedBuf = new Buffer(config.kmsEncryptedHookUrl, 'base64');
@@ -454,6 +513,7 @@ exports.handler = function(event, context) {
         processEvent(event, context);
       } else {
         hookUrl = "https://" + data.Plaintext.toString('ascii');
+        console.log('posting to ' + data.Plaintext.toString('ascii'));
         processEvent(event, context);
       }
     });
