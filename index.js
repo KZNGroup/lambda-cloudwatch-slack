@@ -367,6 +367,63 @@ var handleConfigCompliance = function(event, context) {
   return _.merge(slackMessage, baseSlackMessage);
 };
 
+var handleGuardDutyFinding = function(event, context) {
+  var timestamp = (new Date(event.Records[0].Sns.Timestamp)).getTime()/1000;
+  var message = JSON.parse(event.Records[0].Sns.Message);
+  var region = event.Records[0].EventSubscriptionArn.split(":")[3];
+  var ruleRegion = message.detail.region;
+  var accountId = message.detail.accountId;
+  var accountIdMap = JSON.parse(config.awsAccountMap).accounts
+  var accountName = message.AWSAccountId;
+  var subject = "Guard Duty Finding";
+  var findingTitle = message.detail.title;
+  var findingType = message.detail.type;
+  var findingDescription = message.detail.description;
+  var findingSeverity = message.detail.severity;
+  var findingId = message.detail.id;
+
+  var color = "warning";
+
+  if (0 < findingSeverity < 4.0) {
+      color = "#EAEA23";
+  } else if (4.0 < findingSeverity < 7.0) {
+      color = "warning";
+  } else if (7.0 < findingSeverity < 8.9) {
+      color = "danger";
+  }
+  
+  for (var i=0; i< accountIdMap.length; i++) {
+    if (accountIdMap[i].accountId === accountId) {
+      accountName = accountIdMap[i].name;
+      break;
+    }
+  }
+
+  var slackMessage = {
+    text: "*" + subject + "*",
+    attachments: [
+      {
+        "color": color,
+        "fields": [
+          { "title": "Finding Type", "value": findingType, "short": true },
+          { "title": "Severity", "value": findingSeverity, "short": true },
+          { "title": "AWS Account", "value": accountName, "short": true },
+          { "title": "AWS Region", "value": ruleRegion, "short": true },
+          { "title": "Finding", "value": findingTitle, "short": false },
+          { "title": "Description", "value": findingDescription, "short": false },
+          {
+            "title": "Link to Finding",
+            "value": "https://console.aws.amazon.com/guardduty/home?region=" + ruleRegion + "#/findings?macros=current&fId=" + encodeURIComponent(findingId),
+            "short": false
+          }
+        ],
+        "ts":  timestamp
+      }
+    ]
+  };
+  return _.merge(slackMessage, baseSlackMessage);
+};
+
 var handleAutoScaling = function(event, context) {
   var subject = "AWS AutoScaling Notification"
   var message = JSON.parse(event.Records[0].Sns.Message);
@@ -474,6 +531,10 @@ var processEvent = function(event, context) {
   else if(eventSubscriptionArn.indexOf(config.services.configcompliance.match_text) > -1 || eventSnsSubject.indexOf(config.services.configcompliance.match_text) > -1 || eventSnsMessage.indexOf(config.services.configcompliance.match_text) > -1){
     console.log("processing config compliance notification");
     slackMessage = handleConfigCompliance(event, context);
+  }
+  else if(eventSubscriptionArn.indexOf(config.services.guarddutyfinding.match_text) > -1 || eventSnsSubject.indexOf(config.services.guarddutyfinding.match_text) > -1 || eventSnsMessage.indexOf(config.services.guarddutyfinding.match_text) > -1){
+    console.log("processing guard duty finding");
+    slackMessage = handleGuardDutyFinding(event, context);
   }
   else{
     slackMessage = handleCatchAll(event, context);
