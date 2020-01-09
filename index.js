@@ -549,7 +549,7 @@ exports.handler = function(event, context) {
     hookUrl = config.unencryptedHookUrl;
     processEvent(event, context);
   } else if (config.kmsEncryptedHookUrl && config.kmsEncryptedHookUrl !== '<kmsEncryptedHookUrl>') {
-    var encryptedBuf = new Buffer(config.kmsEncryptedHookUrl, 'base64');
+    var encryptedBuf = Buffer.from(config.kmsEncryptedHookUrl, 'base64');
     var cipherText = { CiphertextBlob: encryptedBuf };
     var kms = new AWS.KMS();
 
