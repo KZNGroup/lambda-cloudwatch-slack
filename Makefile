@@ -29,7 +29,6 @@ test-codepipeline:
 .PHONY: test-all
 test-all: test test-codepipeline
 	AWS_REGION=$(AWS_REGION) $(LAMBDA_TEST) --configFile=$(CONFIG_FILE) run -x test/context.json -j test/sns-cloudwatch-event.json
-	AWS_REGION=$(AWS_REGION) $(LAMBDA_TEST) --configFile=$(CONFIG_FILE) run -x test/context.json -j test/sns-codepipeline-event.json
 	AWS_REGION=$(AWS_REGION) $(LAMBDA_TEST) --configFile=$(CONFIG_FILE) run -x test/context.json -j test/sns-event.json
 	AWS_REGION=$(AWS_REGION) $(LAMBDA_TEST) --configFile=$(CONFIG_FILE) run -x test/context.json -j test/sns-elastic-beanstalk-event.json
 	AWS_REGION=$(AWS_REGION) $(LAMBDA_TEST) --configFile=$(CONFIG_FILE) run -x test/context.json -j test/sns-codedeploy-event.json
