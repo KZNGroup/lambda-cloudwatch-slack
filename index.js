@@ -17,6 +17,19 @@ var baseSlackMessage = {
   ]
 }
 
+var deriveAccountName = function(accountId) {
+  var accountIdMap = JSON.parse(config.awsAccountMap).accounts;
+
+  if (accountIdMap) {
+    const account = _.find(accountIdMap, { accountId: accountId });
+    if (account && account.name) {
+      return account.name;
+    }
+  }
+
+  return accountId;
+}
+
 var postMessage = function(message, callback) {
   var body = JSON.stringify(message);
   var options = url.parse(hookUrl);
@@ -243,8 +256,7 @@ var handleCloudWatch = function(event, context) {
   var region = event.Records[0].EventSubscriptionArn.split(":")[3];
   var alarmRegion = message.Region;
   var accountId = message.AWSAccountId
-  var accountIdMap = JSON.parse(config.awsAccountMap).accounts
-  var accountName = message.AWSAccountId;
+  var accountName = deriveAccountName(accountId);
   var subject = "AWS CloudWatch Notification";
   var alarmName = message.AlarmName;
   var metricName = message.Trigger.MetricName;
@@ -263,17 +275,6 @@ var handleCloudWatch = function(event, context) {
   } else if (message.NewStateValue === "OK") {
       color = "good";
   }
-  
-  if (accountIdMap) {
-    accountName = _.find(accountIdMap, { accountId: accountId }).name
-  }
-/*  for (var i=0; i< accountIdMap.length; i++) {
-    if (accountIdMap[i].accountId === accountId) {
-      accountName = accountIdMap[i].name;
-      break;
-    }
-  }
-*/
 
   for (var i=0; i < dimensions.length; i++) {
     dimensionsText += dimensions[i].name + '=' + dimensions[i].value;
@@ -324,8 +325,7 @@ var handleConfigCompliance = function(event, context) {
   var region = event.Records[0].EventSubscriptionArn.split(":")[3];
   var ruleRegion = message.region;
   var accountId = message.account;
-  var accountIdMap = JSON.parse(config.awsAccountMap).accounts
-  var accountName = message.AWSAccountId;
+  var accountName = deriveAccountName(accountId);
   var subject = "AWS Config Rule Compliance State Change Notification";
   var configRuleName = message.detail.configRuleName;
   var resourceType = message.detail.resourceType;
@@ -339,10 +339,6 @@ var handleConfigCompliance = function(event, context) {
       color = "good";
   }
   
-  if (accountIdMap) {
-    accountName = _.find(accountIdMap, { accountId: accountId }).name
-  }
-
   var slackMessage = {
     text: "*" + subject + "*",
     attachments: [
@@ -374,8 +370,7 @@ var handleGuardDutyFinding = function(event, context) {
   var region = event.Records[0].EventSubscriptionArn.split(":")[3];
   var ruleRegion = message.detail.region;
   var accountId = message.detail.accountId;
-  var accountIdMap = JSON.parse(config.awsAccountMap).accounts
-  var accountName = message.AWSAccountId;
+  var accountName = deriveAccountName(accountId);
   var subject = "Guard Duty Finding";
   var findingTitle = message.detail.title;
   var findingType = message.detail.type;
@@ -395,10 +390,6 @@ var handleGuardDutyFinding = function(event, context) {
   } else if (findingSeverity >= 7.0 && findingSeverity <= 8.9) {
     color = "danger";
     severity = "High";
-  }
-
-  if (accountIdMap) {
-    accountName = _.find(accountIdMap, { accountId: accountId }).name
   }
 
   var slackMessage = {
