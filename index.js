@@ -17,8 +17,8 @@ var baseSlackMessage = {
   ]
 }
 
-var deriveAccountName = function(accountId) {
-  var accountIdMap = JSON.parse(config.awsAccountMap).accounts;
+const deriveAccountName = function(accountId) {
+  const accountIdMap = JSON.parse(config.awsAccountMap).accounts;
 
   if (accountIdMap) {
     const account = _.find(accountIdMap, { accountId: accountId });
