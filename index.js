@@ -17,6 +17,19 @@ var baseSlackMessage = {
   ]
 }
 
+const deriveAccountName = function(accountId) {
+  const accountIdMap = JSON.parse(config.awsAccountMap).accounts;
+
+  if (accountIdMap) {
+    const account = _.find(accountIdMap, { accountId: accountId });
+    if (account && account.name) {
+      return account.name;
+    }
+  }
+
+  return accountId;
+}
+
 var postMessage = function(message, callback) {
   var body = JSON.stringify(message);
   var options = url.parse(hookUrl);
@@ -49,7 +62,7 @@ var postMessage = function(message, callback) {
   postReq.end();
 };
 
-var handleElasticBeanstalk = function(event, context) {
+var handleElasticBeanstalk = function(event) {
   var timestamp = (new Date(event.Records[0].Sns.Timestamp)).getTime()/1000;
   var subject = event.Records[0].Sns.Subject || "AWS Elastic Beanstalk Notification";
   var message = event.Records[0].Sns.Message;
@@ -97,7 +110,7 @@ var handleElasticBeanstalk = function(event, context) {
   return _.merge(slackMessage, baseSlackMessage);
 };
 
-var handleCodeDeploy = function(event, context) {
+var handleCodeDeploy = function(event) {
   var subject = "AWS CodeDeploy Notification";
   var timestamp = (new Date(event.Records[0].Sns.Timestamp)).getTime()/1000;
   var snsSubject = event.Records[0].Sns.Subject;
@@ -144,10 +157,9 @@ var handleCodeDeploy = function(event, context) {
   return _.merge(slackMessage, baseSlackMessage);
 };
 
-var handleCodePipeline = function(event, context) {
+var handleCodePipeline = function(event) {
   var subject = "AWS CodePipeline Notification";
   var timestamp = (new Date(event.Records[0].Sns.Timestamp)).getTime()/1000;
-  var snsSubject = event.Records[0].Sns.Subject;
   var message;
   var fields = [];
   var color = "warning";
@@ -203,7 +215,7 @@ var handleCodePipeline = function(event, context) {
   return _.merge(slackMessage, baseSlackMessage);
 };
 
-var handleElasticache = function(event, context) {
+var handleElasticache = function(event) {
   var subject = "AWS ElastiCache Notification"
   var message = JSON.parse(event.Records[0].Sns.Message);
   var timestamp = (new Date(event.Records[0].Sns.Timestamp)).getTime()/1000;
@@ -237,23 +249,20 @@ var handleElasticache = function(event, context) {
   return _.merge(slackMessage, baseSlackMessage);
 };
 
-var handleCloudWatch = function(event, context) {
+var handleCloudWatch = function(event) {
   var timestamp = (new Date(event.Records[0].Sns.Timestamp)).getTime()/1000;
   var message = JSON.parse(event.Records[0].Sns.Message);
   var region = event.Records[0].EventSubscriptionArn.split(":")[3];
   var alarmRegion = message.Region;
   var accountId = message.AWSAccountId
-  var accountIdMap = JSON.parse(config.awsAccountMap).accounts
-  var accountName = message.AWSAccountId;
+  var accountName = deriveAccountName(accountId);
   var subject = "AWS CloudWatch Notification";
   var alarmName = message.AlarmName;
   var metricName = message.Trigger.MetricName;
   var namespace = message.Trigger.Namespace;
   var dimensions = message.Trigger.Dimensions || [];
   var dimensionsText = "";
-  var oldState = message.OldStateValue;
   var newState = message.NewStateValue;
-  var alarmDescription = message.AlarmDescription;
   var alarmReason = message.NewStateReason;
   var trigger = message.Trigger;
   var color = "warning";
@@ -263,17 +272,6 @@ var handleCloudWatch = function(event, context) {
   } else if (message.NewStateValue === "OK") {
       color = "good";
   }
-  
-  if (accountIdMap) {
-    accountName = _.find(accountIdMap, { accountId: accountId }).name
-  }
-/*  for (var i=0; i< accountIdMap.length; i++) {
-    if (accountIdMap[i].accountId === accountId) {
-      accountName = accountIdMap[i].name;
-      break;
-    }
-  }
-*/
 
   for (var i=0; i < dimensions.length; i++) {
     dimensionsText += dimensions[i].name + '=' + dimensions[i].value;
@@ -318,14 +316,12 @@ var handleCloudWatch = function(event, context) {
   return _.merge(slackMessage, baseSlackMessage);
 };
 
-var handleConfigCompliance = function(event, context) {
+var handleConfigCompliance = function(event) {
   var timestamp = (new Date(event.Records[0].Sns.Timestamp)).getTime()/1000;
   var message = JSON.parse(event.Records[0].Sns.Message);
-  var region = event.Records[0].EventSubscriptionArn.split(":")[3];
   var ruleRegion = message.region;
   var accountId = message.account;
-  var accountIdMap = JSON.parse(config.awsAccountMap).accounts
-  var accountName = message.AWSAccountId;
+  var accountName = deriveAccountName(accountId);
   var subject = "AWS Config Rule Compliance State Change Notification";
   var configRuleName = message.detail.configRuleName;
   var resourceType = message.detail.resourceType;
@@ -339,10 +335,6 @@ var handleConfigCompliance = function(event, context) {
       color = "good";
   }
   
-  if (accountIdMap) {
-    accountName = _.find(accountIdMap, { accountId: accountId }).name
-  }
-
   var slackMessage = {
     text: "*" + subject + "*",
     attachments: [
@@ -368,14 +360,12 @@ var handleConfigCompliance = function(event, context) {
   return _.merge(slackMessage, baseSlackMessage);
 };
 
-var handleGuardDutyFinding = function(event, context) {
+var handleGuardDutyFinding = function(event) {
   var timestamp = (new Date(event.Records[0].Sns.Timestamp)).getTime()/1000;
   var message = JSON.parse(event.Records[0].Sns.Message);
-  var region = event.Records[0].EventSubscriptionArn.split(":")[3];
   var ruleRegion = message.detail.region;
   var accountId = message.detail.accountId;
-  var accountIdMap = JSON.parse(config.awsAccountMap).accounts
-  var accountName = message.AWSAccountId;
+  var accountName = deriveAccountName(accountId);
   var subject = "Guard Duty Finding";
   var findingTitle = message.detail.title;
   var findingType = message.detail.type;
@@ -395,10 +385,6 @@ var handleGuardDutyFinding = function(event, context) {
   } else if (findingSeverity >= 7.0 && findingSeverity <= 8.9) {
     color = "danger";
     severity = "High";
-  }
-
-  if (accountIdMap) {
-    accountName = _.find(accountIdMap, { accountId: accountId }).name
   }
 
   var slackMessage = {
@@ -426,11 +412,10 @@ var handleGuardDutyFinding = function(event, context) {
   return _.merge(slackMessage, baseSlackMessage);
 };
 
-var handleAutoScaling = function(event, context) {
+var handleAutoScaling = function(event) {
   var subject = "AWS AutoScaling Notification"
   var message = JSON.parse(event.Records[0].Sns.Message);
   var timestamp = (new Date(event.Records[0].Sns.Timestamp)).getTime()/1000;
-  var eventname, nodename;
   var color = "good";
 
   for(key in message){
@@ -457,7 +442,7 @@ var handleAutoScaling = function(event, context) {
   return _.merge(slackMessage, baseSlackMessage);
 };
 
-var handleCatchAll = function(event, context) {
+var handleCatchAll = function(event) {
 
     var record = event.Records[0]
     var subject = record.Sns.Subject
@@ -508,35 +493,35 @@ var processEvent = function(event, context) {
 
   if(eventSubscriptionArn.indexOf(config.services.codepipeline.match_text) > -1 || eventSnsSubject.indexOf(config.services.codepipeline.match_text) > -1 || eventSnsMessage.indexOf(config.services.codepipeline.match_text) > -1){
     console.log("processing codepipeline notification");
-    slackMessage = handleCodePipeline(event,context)
+    slackMessage = handleCodePipeline(event)
   }
   else if(eventSubscriptionArn.indexOf(config.services.elasticbeanstalk.match_text) > -1 || eventSnsSubject.indexOf(config.services.elasticbeanstalk.match_text) > -1 || eventSnsMessage.indexOf(config.services.elasticbeanstalk.match_text) > -1){
     console.log("processing elasticbeanstalk notification");
-    slackMessage = handleElasticBeanstalk(event,context)
+    slackMessage = handleElasticBeanstalk(event)
   }
   else if(eventSubscriptionArn.indexOf(config.services.cloudwatch.match_text) > -1 || eventSnsSubject.indexOf(config.services.cloudwatch.match_text) > -1 || eventSnsMessage.indexOf(config.services.cloudwatch.match_text) > -1){
     console.log("processing cloudwatch notification");
-    slackMessage = handleCloudWatch(event,context);
+    slackMessage = handleCloudWatch(event);
   }
   else if(eventSubscriptionArn.indexOf(config.services.codedeploy.match_text) > -1 || eventSnsSubject.indexOf(config.services.codedeploy.match_text) > -1 || eventSnsMessage.indexOf(config.services.codedeploy.match_text) > -1){
     console.log("processing codedeploy notification");
-    slackMessage = handleCodeDeploy(event,context);
+    slackMessage = handleCodeDeploy(event);
   }
   else if(eventSubscriptionArn.indexOf(config.services.elasticache.match_text) > -1 || eventSnsSubject.indexOf(config.services.elasticache.match_text) > -1 || eventSnsMessage.indexOf(config.services.elasticache.match_text) > -1){
     console.log("processing elasticache notification");
-    slackMessage = handleElasticache(event,context);
+    slackMessage = handleElasticache(event);
   }
   else if(eventSubscriptionArn.indexOf(config.services.autoscaling.match_text) > -1 || eventSnsSubject.indexOf(config.services.autoscaling.match_text) > -1 || eventSnsMessage.indexOf(config.services.autoscaling.match_text) > -1){
     console.log("processing autoscaling notification");
-    slackMessage = handleAutoScaling(event, context);
+    slackMessage = handleAutoScaling(event);
   }
   else if(eventSubscriptionArn.indexOf(config.services.configcompliance.match_text) > -1 || eventSnsSubject.indexOf(config.services.configcompliance.match_text) > -1 || eventSnsMessage.indexOf(config.services.configcompliance.match_text) > -1){
     console.log("processing config compliance notification");
-    slackMessage = handleConfigCompliance(event, context);
+    slackMessage = handleConfigCompliance(event);
   }
   else if(eventSubscriptionArn.indexOf(config.services.guarddutyfinding.match_text) > -1 || eventSnsSubject.indexOf(config.services.guarddutyfinding.match_text) > -1 || eventSnsMessage.indexOf(config.services.guarddutyfinding.match_text) > -1){
     console.log("processing guard duty finding");
-    slackMessage = handleGuardDutyFinding(event, context);
+    slackMessage = handleGuardDutyFinding(event);
   }
   else{
     slackMessage = handleCatchAll(event, context);
@@ -564,7 +549,7 @@ exports.handler = function(event, context) {
     hookUrl = config.unencryptedHookUrl;
     processEvent(event, context);
   } else if (config.kmsEncryptedHookUrl && config.kmsEncryptedHookUrl !== '<kmsEncryptedHookUrl>') {
-    var encryptedBuf = new Buffer(config.kmsEncryptedHookUrl, 'base64');
+    var encryptedBuf = Buffer.from(config.kmsEncryptedHookUrl, 'base64');
     var cipherText = { CiphertextBlob: encryptedBuf };
     var kms = new AWS.KMS();
 

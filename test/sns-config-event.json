@@ -1,0 +1,22 @@
+{
+  "Records": [
+      {
+          "EventSource": "aws:sns",
+          "EventVersion": "1.0",
+          "EventSubscriptionArn": "arn:aws:sns:ap-southeast-2:390556333961:notify-warning:427bab3c-6e54-43af-9fa5-1f8f8e083c7b",
+          "Sns": {
+              "Type": "Notification",
+              "MessageId": "dffaaa50-ef10-5d73-96f4-fcded9a967d7",
+              "TopicArn": "arn:aws:sns:ap-southeast-2:390556333961:notify-warning",
+              "Subject": "Config Rules Compliance Change",
+              "Message": "{\n    \"version\": \"0\",\n    \"id\": \"86d73788-6877-ce78-fe1f-73ffd02b6b6c\",\n    \"detail-type\": \"Config Rules Compliance Change\",\n    \"source\": \"aws.config\",\n    \"account\": \"111111111111111\",\n    \"time\": \"2020-01-07T07:34:08Z\",\n    \"region\": \"ap-southeast-2\",\n    \"resources\": [],\n    \"detail\": {\n        \"resourceId\": \"ANPA56J6477MY7DTJMNIM\",\n        \"awsRegion\": \"ap-southeast-2\",\n        \"awsAccountId\": \"111111111111111\",\n        \"configRuleName\": \"IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS\",\n        \"recordVersion\": \"1.0\",\n        \"configRuleARN\": \"arn:aws:config:ap-southeast-2:958446501849:config-rule/config-rule-xququw\",\n        \"messageType\": \"ComplianceChangeNotification\",\n        \"newEvaluationResult\": {\n            \"evaluationResultIdentifier\": {\n                \"evaluationResultQualifier\": {\n                    \"configRuleName\": \"IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS\",\n                    \"resourceType\": \"AWS::IAM::Policy\",\n                    \"resourceId\": \"ANPA56J6477MY7DTJMNIM\"\n                },\n                \"orderingTimestamp\": \"2020-01-07T07:33:42.535Z\"\n            },\n            \"complianceType\": \"COMPLIANT\",\n            \"resultRecordedTime\": \"2020-01-07T07:34:07.861Z\",\n            \"configRuleInvokedTime\": \"2020-01-07T07:34:07.695Z\"\n        },\n        \"notificationCreationTime\": \"2020-01-07T07:34:08.932Z\",\n        \"resourceType\": \"AWS::IAM::Policy\"\n    }\n}",
+              "Timestamp": "2020-01-07T07:34:17.382Z",
+              "SignatureVersion": "1",
+              "Signature": "jQER/N+z4ho2/1XRRMVESlaU2Qn+YJNMjUrQ45Cn0VIej4XTJ4flbjMQ+NszwPXyLB17Vfkw4JAlD4nGF8gWJqd+m050oZLAhRL1NybVDZnqJYmoMhucEctEsSsnZ5I8Nw5B2N1MGQc6C1hJ4GK0kqtErRQQmRn6t0bJA9puwzOU8bt3ZkuebZf1ScdYQAy6tOqqDdWKPHF+iZJI0SowZCuh7DaIxIxnDFI+uKZvCo57OTpzm1QkQDZtd1OYbqqNj1bDHseQRWRGZFFuXHKh87O0Cwld2M7q0vK7UpjPZO6o/c77cvlyj9ZZApkRP0HJavM0SFd06yD9A4417Up5+g==",
+              "SigningCertUrl": "https://sns.ap-southeast-2.amazonaws.com/SimpleNotificationService-6aad65c2f9911b05cd53efda11f913f9.pem",
+              "UnsubscribeUrl": "https://sns.ap-southeast-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:ap-southeast-2:390556333961:notify-warning:427bab3c-6e54-43af-9fa5-1f8f8e083c7b",
+              "MessageAttributes": {}
+          }
+      }
+  ]
+}
