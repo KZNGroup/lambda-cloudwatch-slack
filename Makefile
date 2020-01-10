@@ -36,6 +36,7 @@ test-all: test test-codepipeline
 	AWS_REGION=$(AWS_REGION) $(LAMBDA_TEST) --configFile=$(CONFIG_FILE) run -x test/context.json -j test/sns-elasticache-event.json
 	AWS_REGION=$(AWS_REGION) $(LAMBDA_TEST) --configFile=$(CONFIG_FILE) run -x test/context.json -j test/sns-autoscaling-event.json
 	AWS_REGION=$(AWS_REGION) $(LAMBDA_TEST) --configFile=$(CONFIG_FILE) run -x test/context.json -j test/sns-config-event.json
+	AWS_REGION=$(AWS_REGION) $(LAMBDA_TEST) --configFile=$(CONFIG_FILE) run -x test/context.json -j test/sns-codebuild-state-failed-event.json
 
 .PHONY: package
 package:
