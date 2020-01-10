@@ -231,7 +231,7 @@ const handleCodeBuild = function(event) {
   const error = failedPhase ? failedPhase['phase-context'].join('\n') : '';
 
   const fields = [
-    { "title": "Account", "value": message.account, "short": true },
+    { "title": "Account", "value": deriveAccountName(message.account), "short": true },
     { "title": "Region", "value": message.region, "short": true },
     { "title": "Project", "value": message.detail['project-name'], "short": true },
     { "title": "Status", "value": message.detail['build-status'], "short": true },
