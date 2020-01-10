@@ -215,6 +215,48 @@ var handleCodePipeline = function(event) {
   return _.merge(slackMessage, baseSlackMessage);
 };
 
+const handleCodeBuild = function(event) {
+  const message = JSON.parse(event.Records[0].Sns.Message);
+
+  var color = "warning";
+  if (message.detail['build-status'] === "SUCCEEDED"){
+    color = "good";
+  } else if(message.detail['build-status'] === "IN_PROGRESS"){
+    color = "warning";
+  } else if(['FAILED', 'STOPPED'].includes(message.detail['build-status'])){
+    color = "danger";
+  }
+
+  const failedPhase = message.detail['additional-information'].phases.find(p => p['phase-status'] === 'FAILED');
+  const error = failedPhase['phase-context'].join('\n');
+
+  const fields = [
+    { "title": "Account", "value": message.account, "short": true },
+    { "title": "Region", "value": message.region, "short": true },
+    { "title": "Project", "value": message.detail['project-name'], "short": true },
+    { "title": "Status", "value": message.detail['build-status'], "short": true },
+    { "title": "Error", "value": error, "short": false },
+    {
+      "title": "Status Link",
+      "value": message.detail['additional-information'].logs['deep-link'],
+      "short": false
+    }
+  ];
+
+  const slackMessage = {
+    text: "*AWS CodeBuild Notification*",
+    attachments: [
+      {
+        "color": color,
+        "fields": fields,
+        "ts": new Date(event.Records[0].Sns.Timestamp).getTime()/1000
+      }
+    ]
+  };
+
+  return _.merge(slackMessage, baseSlackMessage);
+};
+
 var handleElasticache = function(event) {
   var subject = "AWS ElastiCache Notification"
   var message = JSON.parse(event.Records[0].Sns.Message);
@@ -494,6 +536,10 @@ var processEvent = function(event, context) {
   if(eventSubscriptionArn.indexOf(config.services.codepipeline.match_text) > -1 || eventSnsSubject.indexOf(config.services.codepipeline.match_text) > -1 || eventSnsMessage.indexOf(config.services.codepipeline.match_text) > -1){
     console.log("processing codepipeline notification");
     slackMessage = handleCodePipeline(event)
+  }
+  else if(eventSubscriptionArn.indexOf(config.services.codebuild.match_text) > -1 || eventSnsSubject.indexOf(config.services.codebuild.match_text) > -1 || eventSnsMessage.indexOf(config.services.codebuild.match_text) > -1){
+    console.log("processing codebuild notification");
+    slackMessage = handleCodeBuild(event)
   }
   else if(eventSubscriptionArn.indexOf(config.services.elasticbeanstalk.match_text) > -1 || eventSnsSubject.indexOf(config.services.elasticbeanstalk.match_text) > -1 || eventSnsMessage.indexOf(config.services.elasticbeanstalk.match_text) > -1){
     console.log("processing elasticbeanstalk notification");

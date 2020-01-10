@@ -22,6 +22,10 @@ module.exports = {
       // text in the sns message or topicname to match on to process this service type
       match_text: "CodePipelineNotifications"
     },
+    codebuild: {
+      // use text in the message rather than topicname to allow for messages coming from a CloudWatch Event Rule
+      match_text: "CodeBuild Build State Change"
+    },
     codedeploy: {
       // text in the sns message or topicname to match on to process this service type
       match_text: "CodeDeploy"
