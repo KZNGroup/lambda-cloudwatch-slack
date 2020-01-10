@@ -526,51 +526,49 @@ var handleCatchAll = function(event) {
   return _.merge(slackMessage, baseSlackMessage);
 }
 
+const eventMatches = function(event, matchText) {
+  const eventSubscriptionArn = event.Records[0].EventSubscriptionArn;
+  const eventSnsSubject = event.Records[0].Sns.Subject || 'no subject';
+  const eventSnsMessage = event.Records[0].Sns.Message;
+
+  return eventSubscriptionArn.includes(matchText)
+          || eventSnsSubject.includes(matchText)
+          || eventSnsMessage.includes(matchText);
+}
+
 var processEvent = function(event, context) {
   console.log("sns received:" + JSON.stringify(event, null, 2));
   var slackMessage = null;
-  var eventSubscriptionArn = event.Records[0].EventSubscriptionArn;
-  var eventSnsSubject = event.Records[0].Sns.Subject || 'no subject';
-  var eventSnsMessage = event.Records[0].Sns.Message;
 
-  if(eventSubscriptionArn.indexOf(config.services.codepipeline.match_text) > -1 || eventSnsSubject.indexOf(config.services.codepipeline.match_text) > -1 || eventSnsMessage.indexOf(config.services.codepipeline.match_text) > -1){
+  if (eventMatches(event, config.services.codepipeline.match_text)) {
     console.log("processing codepipeline notification");
     slackMessage = handleCodePipeline(event)
-  }
-  else if(eventSubscriptionArn.indexOf(config.services.codebuild.match_text) > -1 || eventSnsSubject.indexOf(config.services.codebuild.match_text) > -1 || eventSnsMessage.indexOf(config.services.codebuild.match_text) > -1){
+  } else if(eventMatches(event, config.services.codebuild.match_text)) {
     console.log("processing codebuild notification");
     slackMessage = handleCodeBuild(event)
-  }
-  else if(eventSubscriptionArn.indexOf(config.services.elasticbeanstalk.match_text) > -1 || eventSnsSubject.indexOf(config.services.elasticbeanstalk.match_text) > -1 || eventSnsMessage.indexOf(config.services.elasticbeanstalk.match_text) > -1){
+  } else if(eventMatches(event, config.services.elasticbeanstalk.match_text)) {
     console.log("processing elasticbeanstalk notification");
     slackMessage = handleElasticBeanstalk(event)
-  }
-  else if(eventSubscriptionArn.indexOf(config.services.cloudwatch.match_text) > -1 || eventSnsSubject.indexOf(config.services.cloudwatch.match_text) > -1 || eventSnsMessage.indexOf(config.services.cloudwatch.match_text) > -1){
+  } else if(eventMatches(event, config.services.cloudwatch.match_text)) {
     console.log("processing cloudwatch notification");
     slackMessage = handleCloudWatch(event);
-  }
-  else if(eventSubscriptionArn.indexOf(config.services.codedeploy.match_text) > -1 || eventSnsSubject.indexOf(config.services.codedeploy.match_text) > -1 || eventSnsMessage.indexOf(config.services.codedeploy.match_text) > -1){
+  } else if(eventMatches(event, config.services.codedeploy.match_text)) {
     console.log("processing codedeploy notification");
     slackMessage = handleCodeDeploy(event);
-  }
-  else if(eventSubscriptionArn.indexOf(config.services.elasticache.match_text) > -1 || eventSnsSubject.indexOf(config.services.elasticache.match_text) > -1 || eventSnsMessage.indexOf(config.services.elasticache.match_text) > -1){
+  } else if(eventMatches(event, config.services.elasticache.match_text)) {
     console.log("processing elasticache notification");
     slackMessage = handleElasticache(event);
-  }
-  else if(eventSubscriptionArn.indexOf(config.services.autoscaling.match_text) > -1 || eventSnsSubject.indexOf(config.services.autoscaling.match_text) > -1 || eventSnsMessage.indexOf(config.services.autoscaling.match_text) > -1){
+  } else if(eventMatches(event, config.services.autoscaling.match_text)) {
     console.log("processing autoscaling notification");
     slackMessage = handleAutoScaling(event);
-  }
-  else if(eventSubscriptionArn.indexOf(config.services.configcompliance.match_text) > -1 || eventSnsSubject.indexOf(config.services.configcompliance.match_text) > -1 || eventSnsMessage.indexOf(config.services.configcompliance.match_text) > -1){
+  } else if(eventMatches(event, config.services.configcompliance.match_text)) {
     console.log("processing config compliance notification");
     slackMessage = handleConfigCompliance(event);
-  }
-  else if(eventSubscriptionArn.indexOf(config.services.guarddutyfinding.match_text) > -1 || eventSnsSubject.indexOf(config.services.guarddutyfinding.match_text) > -1 || eventSnsMessage.indexOf(config.services.guarddutyfinding.match_text) > -1){
+  } else if(eventMatches(event, config.services.guarddutyfinding.match_text)) {
     console.log("processing guard duty finding");
     slackMessage = handleGuardDutyFinding(event);
-  }
-  else{
-    slackMessage = handleCatchAll(event, context);
+  } else {
+    slackMessage = handleCatchAll(event);
   }
 
   postMessage(slackMessage, function(response) {
