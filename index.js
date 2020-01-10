@@ -228,7 +228,7 @@ const handleCodeBuild = function(event) {
   }
 
   const failedPhase = message.detail['additional-information'].phases.find(p => p['phase-status'] === 'FAILED');
-  const error = failedPhase['phase-context'].join('\n');
+  const error = failedPhase ? failedPhase['phase-context'].join('\n') : '';
 
   const fields = [
     { "title": "Account", "value": message.account, "short": true },
