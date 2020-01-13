@@ -1,0 +1,20 @@
+{
+  "Records": [
+    {
+      "EventSource": "aws:sns",
+      "EventVersion": "1.0",
+      "EventSubscriptionArn": "arn:aws:sns:us-east-1:123456789123:CodeDeployNotifications:00000000-0000-0000-0000-000000000000",
+      "Sns": {
+        "Type" : "Notification",
+        "MessageId" : "30ffc0a8-c552-502a-bfd5-963ecfb613b3",
+        "TopicArn" : "arn:aws:sns:ap-southeast-2:123456789123:topic",
+        "Message" : "{\"version\":\"0\",\"id\":\"859ab2fd-8b4a-6c09-2f8f-2f2e4c665c8d\",\"detail-type\":\"CodePipeline Action Execution State Change\",\"source\":\"aws.codepipeline\",\"account\":\"123456789123\",\"time\":\"2020-01-13T06:05:18Z\",\"region\":\"ap-southeast-2\",\"resources\":[\"arn:aws:codepipeline:ap-southeast-2:123456789123:pipeline\"],\"detail\":{\"pipeline\":\"pipeline\",\"execution-id\":\"f9882ffe-a0ad-42e9-833e-2db4575ad24a\",\"stage\":\"Deploy\",\"action\":\"Deploy\",\"state\":\"FAILED\",\"region\":\"ap-southeast-2\",\"type\":{\"owner\":\"AWS\",\"provider\":\"S3\",\"category\":\"Deploy\",\"version\":\"1\"},\"version\":1.0}}",
+        "Timestamp" : "2020-01-13T06:05:24.904Z",
+        "SignatureVersion" : "1",
+        "Signature" : "mIZrEJaZcrRNNIcmPfLb+wURA/nPfAfR0/p1GVAX/NmfvzGyE2ml48U/H7EFmvGhrithn9UOd4KQ0359dlXozJ7xZ6KArdCiGJpdUEO+Ld1ptvF3WNiQMo1ckGHUUr3P/AbXa/ex6YScYisn3QK9PDcMbLbVdIwwTZsbILOYIvPLd04m/flBNINu6kDvMxeH9uIDBlpI+uGlY317INU6mtRExHqPK+5F49UU7RR+IDfqaRIv71sf+RdzftdAELIHx1aZgOHBKQJMciYFGv0n+VDqnGi/StmeLmtq0y9JgLtcKlPXWwNF76TyBi1FFwCNBvEuUbWCQLg0NEgkihmaHw==",
+        "SigningCertURL" : "https://sns.ap-southeast-2.amazonaws.com/SimpleNotificationService-6aad65c2f9911b05cd53efda11f913f9.pem",
+        "UnsubscribeURL" : "https://sns.ap-southeast-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:ap-southeast-2:991679131068:notify-warning:b04f3881-3ed6-40a5-92da-272e79f6db78"
+      }
+    }
+  ]
+}

@@ -19,8 +19,8 @@ module.exports = {
       match_text: "AlarmName"
     },
     codepipeline: {
-      // text in the sns message or topicname to match on to process this service type
-      match_text: "CodePipelineNotifications"
+      // text in the CloudWatch Event's source fields
+      match_text: "aws.codepipeline"
     },
     codebuild: {
       // use text in the message rather than topicname to allow for messages coming from a CloudWatch Event Rule
