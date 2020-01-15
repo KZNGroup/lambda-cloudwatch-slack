@@ -526,6 +526,7 @@ var handleCatchAll = function(event) {
   return _.merge(slackMessage, baseSlackMessage);
 }
 
+// loosely matches whether the matchText is anywhere in the subject, body or SNS topic ARN.
 const eventMatches = function(event, matchText) {
   const eventSubscriptionArn = event.Records[0].EventSubscriptionArn;
   const eventSnsSubject = event.Records[0].Sns.Subject || 'no subject';
@@ -536,11 +537,21 @@ const eventMatches = function(event, matchText) {
           || eventSnsMessage.includes(matchText);
 }
 
+// strictly matches the source of the event.
+const eventMatchesSource = function(event, matchText) {
+  try {
+    const message = JSON.parse(event.Records[0].Sns.Message);
+    return message.source === matchText;
+  } catch(e) {
+    return false;
+  }
+}
+
 var processEvent = function(event, context) {
   console.log("sns received:" + JSON.stringify(event, null, 2));
   var slackMessage = null;
 
-  if (eventMatches(event, config.services.codepipeline.match_text)) {
+  if (eventMatchesSource(event, config.services.codepipeline.match_text)) {
     console.log("processing codepipeline notification");
     slackMessage = handleCodePipeline(event)
   } else if(eventMatches(event, config.services.codebuild.match_text)) {
