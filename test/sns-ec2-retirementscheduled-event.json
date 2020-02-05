@@ -1,0 +1,27 @@
+{
+    "Records": [
+        {
+            "EventSource": "aws:sns",
+            "EventVersion": "1.0",
+            "EventSubscriptionArn": "arn:aws:sns:ap-southeast-2:991679131068:notify-error:209a2910-ecfb-4439-9e40-134d9050418f",
+            "Sns": {
+                "Type": "Notification",
+                "MessageId": "82262b9b-3bf4-5e9f-a70d-7d36edbcaa40",
+                "TopicArn": "arn:aws:sns:ap-southeast-2:991679131068:notify-error",
+                "Subject": "Test",
+                "Message": "{\n  \"version\": \"0\",\n  \"id\": \"7fb65329-1628-4cf3-a740-95fg457h1402\",\n  \"detail-type\": \"AWS Health Event\",\n  \"source\": \"aws.health\",\n  \"account\": \"123456789101\",\n  \"time\": \"2016-06-05T06:27:57Z\",\n  \"region\": \"ap-southeast-2\",\n  \"resources\": [\"i-12345678\"],\n  \"detail\": {\n    \"eventArn\": \"arn:aws:health:region::event/id\",\n    \"service\": \"EC2\",\n    \"eventTypeCode\": \"AWS_EC2_DEDICATED_HOST_NETWORK_MAINTENANCE_SCHEDULED\",\n    \"eventTypeCategory\": \"scheduledChange\",\n    \"startTime\": \"Sat, 05 Jun 2016 15:10:09 GMT\",\n    \"eventDescription\": [{\n      \"language\": \"en_US\",\n      \"latestDescription\": \"A description of the event will be provided here\"\n    }],\n    \"affectedEntities\": [{\n      \"entityValue\": \"i-12345678\",\n      \"tags\": {\n        \"stage\": \"prod\",\n        \"app\": \"my-app\"\n      }\n    }]\n  }\n}",
+                "Timestamp": "2020-01-31T07:15:20.684Z",
+                "SignatureVersion": "1",
+                "Signature": "eGvU16abHP8PTmbCkmU/6kxvot+eKqhNOlKX6jttIINGM/mpMEwuNLxbkS7os2U3XnqR3Jbdeff/Hj4ucP6JH1x8SGRZrYKoQBiTzpZZYAvQOQj2TkwkTxkSNwk2uivvzhJmdfOUrTDXqEf6yO/fllJichjkRtA7sp5ZD3ogSjcFAAKb/nMtJfkni3NxVa5YYmJONxm8GBzt+wq/tbumgPiZF8mPq3j8/cwDl3qwN0GhfhbXkZTtibMoZZDyruxOCmYSofKlLWXNmq+JzUrX31R7nZL1noe5D4Rf2+1UckjrvSOCkA+QuCq4jUFnTW2xanqLvoFieVns3Zs6ok/Lgg==",
+                "SigningCertUrl": "https://sns.ap-southeast-2.amazonaws.com/SimpleNotificationService-a86cb10b4e1f29c941702d737128f7b6.pem",
+                "UnsubscribeUrl": "https://sns.ap-southeast-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:ap-southeast-2:991679131068:notify-error:209a2910-ecfb-4439-9e40-134d9050418f",
+                "MessageAttributes": {
+                    "Test": {
+                        "Type": "String",
+                        "Value": "TEST"
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -454,6 +454,37 @@ var handleGuardDutyFinding = function(event) {
   return _.merge(slackMessage, baseSlackMessage);
 };
 
+var handleEC2RetirementScheduled = function(event) {
+
+  var subject = event.Records[0].Sns.Subject;
+  var timestamp = new Date(event.Records[0].Sns.Timestamp).getTime() / 1000;
+  var message = JSON.parse(event.Records[0].Sns.Message);
+  var color = "warning";
+
+  var slackMessage = {
+    text: "*" + subject + "*",
+    attachments: [
+      {
+        "color": color,
+        "fields": [
+          { "title": "Account", "value": deriveAccountName(message.account), "short": true },
+          { "title": "Region", "value": message.region, "short": true },
+          { "title": "Event", "value": message.detail['eventTypeCode'], "short": true },
+          { "title": "Resource", "value": message.resources[0], "short": true },
+          { "title": "EventArn", "value": message.detail['eventArn'], "short": true },
+          {
+            "title": "Link to Event",
+            "value": " https://" + message.region + ".console.aws.amazon.com/ec2/v2/home?region=" + message.region + "#Events:",
+            "short": false
+          }
+        ],
+        "ts":  timestamp
+      }
+    ]
+  };
+  return _.merge(slackMessage, baseSlackMessage);
+};
+
 var handleAutoScaling = function(event) {
   var subject = "AWS AutoScaling Notification"
   var message = JSON.parse(event.Records[0].Sns.Message);
@@ -578,6 +609,9 @@ var processEvent = function(event, context) {
   } else if(eventMatches(event, config.services.guarddutyfinding.match_text)) {
     console.log("processing guard duty finding");
     slackMessage = handleGuardDutyFinding(event);
+  } else if(eventMatchesSource(event, config.services.ec2retirementscheduled.match_text)) {
+    console.log("processing EC2 Retirement Scheduled");
+    slackMessage = handleEC2RetirementScheduled(event);
   } else {
     slackMessage = handleCatchAll(event);
   }
