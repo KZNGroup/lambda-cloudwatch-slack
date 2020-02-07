@@ -45,7 +45,7 @@ module.exports = {
     guarddutyfinding: {
       match_text: "GuardDuty Finding"
     },
-    ec2retirementscheduled: {
+    health: {
       match_text: "aws.health"
     }
   }
