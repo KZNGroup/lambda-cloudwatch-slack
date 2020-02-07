@@ -222,9 +222,9 @@ const handleCodeBuild = function(event) {
   if (message.detail['build-status'] === "SUCCEEDED"){
     color = "good";
   } else if(message.detail['build-status'] === "IN_PROGRESS"){
-    color = "warning";
+    color = "good";
   } else if(['FAILED', 'STOPPED'].includes(message.detail['build-status'])){
-    color = "danger";
+    color = "warning";
   }
 
   const failedPhase = message.detail['additional-information'].phases.find(p => p['phase-status'] === 'FAILED');
