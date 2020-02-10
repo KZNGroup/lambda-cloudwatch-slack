@@ -222,9 +222,9 @@ const handleCodeBuild = function(event) {
   if (message.detail['build-status'] === "SUCCEEDED"){
     color = "good";
   } else if(message.detail['build-status'] === "IN_PROGRESS"){
-    color = "warning";
+    color = "good";
   } else if(['FAILED', 'STOPPED'].includes(message.detail['build-status'])){
-    color = "danger";
+    color = "warning";
   }
 
   const failedPhase = message.detail['additional-information'].phases.find(p => p['phase-status'] === 'FAILED');
@@ -454,14 +454,18 @@ var handleGuardDutyFinding = function(event) {
   return _.merge(slackMessage, baseSlackMessage);
 };
 
-var handleEC2RetirementScheduled = function(event) {
+const handleHealth = function(event) {
 
-  var subject = event.Records[0].Sns.Subject;
-  var timestamp = new Date(event.Records[0].Sns.Timestamp).getTime() / 1000;
-  var message = JSON.parse(event.Records[0].Sns.Message);
-  var color = "warning";
+  const subject = event.Records[0].Sns.Subject;
+  const timestamp = new Date(event.Records[0].Sns.Timestamp).getTime() / 1000;
+  const message = JSON.parse(event.Records[0].Sns.Message);
+  const color = "warning";
+  const resources = Array.isArray(message.resources) ? message.resources.join(', ') : '';
+  const description = Array.isArray(message.detail.eventDescription)
+    ? message.detail.eventDescription.map(d => d.latestDescription).join(', ')
+    : '';
 
-  var slackMessage = {
+  const slackMessage = {
     text: "*" + subject + "*",
     attachments: [
       {
@@ -470,13 +474,13 @@ var handleEC2RetirementScheduled = function(event) {
           { "title": "Account", "value": deriveAccountName(message.account), "short": true },
           { "title": "Region", "value": message.region, "short": true },
           { "title": "Event", "value": message.detail['eventTypeCode'], "short": true },
-          { "title": "Resource", "value": message.resources[0], "short": true },
-          { "title": "EventArn", "value": message.detail['eventArn'], "short": true },
+          { "title": "Resource", "value": resources, "short": true },
           {
-            "title": "Link to Event",
-            "value": " https://" + message.region + ".console.aws.amazon.com/ec2/v2/home?region=" + message.region + "#Events:",
+            "title": "Health Dashboard",
+            "value": "https://phd.aws.amazon.com/phd/home#/dashboard/open-issues",
             "short": false
-          }
+          },
+          { "title": "Description", "value": description, "short": false }
         ],
         "ts":  timestamp
       }
@@ -609,9 +613,9 @@ var processEvent = function(event, context) {
   } else if(eventMatches(event, config.services.guarddutyfinding.match_text)) {
     console.log("processing guard duty finding");
     slackMessage = handleGuardDutyFinding(event);
-  } else if(eventMatchesSource(event, config.services.ec2retirementscheduled.match_text)) {
+  } else if(eventMatchesSource(event, config.services.health.match_text)) {
     console.log("processing EC2 Retirement Scheduled");
-    slackMessage = handleEC2RetirementScheduled(event);
+    slackMessage = handleHealth(event);
   } else {
     slackMessage = handleCatchAll(event);
   }
